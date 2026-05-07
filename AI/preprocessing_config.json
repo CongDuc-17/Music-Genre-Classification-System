@@ -1,0 +1,18 @@
+{
+  "classes": [
+    "blues",
+    "classical",
+    "country",
+    "disco",
+    "hiphop",
+    "jazz",
+    "metal",
+    "pop",
+    "reggae",
+    "rock"
+  ],
+  "chunk_duration": 4,
+  "overlap_duration": 2,
+  "n_mels": 128,
+  "target_cols": 173
+}
