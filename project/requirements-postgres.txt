@@ -1,0 +1,2 @@
+# Chỉ cần khi dùng PostgreSQL (DATABASE_URL). Cài thêm: pip install -r requirements-postgres.txt
+psycopg2-binary>=2.9

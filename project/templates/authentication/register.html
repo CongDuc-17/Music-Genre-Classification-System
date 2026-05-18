@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+{% block auth_content %}
+<div class="gl-auth-wrap flex flex-1 items-center justify-center px-4 py-16">
+  <section class="w-full max-w-md spotify-card">
+    <div class="mb-8 text-center">
+      <div class="gl-brand-mark mx-auto mb-4">G</div>
+      <h1 class="text-3xl font-bold">Create your account</h1>
+      <p class="mt-2 text-sm text-spotify-muted">Use the classifier and keep a private upload history.</p>
+    </div>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% for field in form %}
+        <div>
+          {% if field.errors %}<p class="mb-2 text-xs text-red-400">{{ field.errors.0 }}</p>{% endif %}
+          {{ field }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="spotify-pill-btn w-full">Register</button>
+    </form>
+    <p class="mt-8 text-center text-sm text-spotify-muted">
+      Already have an account? <a href="{% url 'dashboard:login' %}" class="font-bold text-white hover:text-spotify-green">Sign in</a>
+    </p>
+  </section>
+</div>
+{% endblock %}

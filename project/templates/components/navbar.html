@@ -1,0 +1,17 @@
+<header class="gl-topbar">
+  <div class="flex min-w-0 items-center gap-3">
+    <button type="button" class="gl-icon-btn md:hidden rounded-full" @click="sidebarOpen = true" aria-label="Open menu">
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="min-w-0">
+      <p class="text-xs font-bold uppercase text-spotify-muted">{{ header_label|default:"Dashboard" }}</p>
+      <h1 class="truncate text-xl font-bold leading-6">{{ header_title|default:"Overview" }}</h1>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="hidden text-sm text-spotify-muted sm:inline">{{ request.user.username }}</span>
+    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-spotify-elevated text-sm font-bold text-spotify-green">
+      {{ request.user.username|slice:":1"|upper }}
+    </div>
+  </div>
+</header>

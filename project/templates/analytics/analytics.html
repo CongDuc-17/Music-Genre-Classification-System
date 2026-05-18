@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<section class="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="spotify-card gl-stat-card">
+    <p class="text-xs font-bold uppercase text-spotify-muted">Classifications</p>
+    <p class="mt-3 text-4xl font-bold">{{ stats.total_classifications }}</p>
+  </div>
+  <div class="spotify-card gl-stat-card">
+    <p class="text-xs font-bold uppercase text-spotify-muted">Last 7 days</p>
+    <p class="mt-3 text-4xl font-bold">{{ stats.recent_activity_count_7d }}</p>
+  </div>
+  <div class="spotify-card sm:col-span-2">
+    <p class="mb-2 text-xs font-bold uppercase text-spotify-muted">Note</p>
+    <p class="text-sm text-spotify-muted">Charts show usage and predicted labels from uploads. They are not ground-truth accuracy reports.</p>
+  </div>
+</section>
+
+<section class="grid gap-6 lg:grid-cols-2">
+  <div class="spotify-card">
+    <h3 class="mb-4 text-2xl font-bold">Genre distribution</h3>
+    <canvas id="genreBar" height="280"></canvas>
+  </div>
+  <div class="spotify-card">
+    <h3 class="mb-4 text-2xl font-bold">Activity by day</h3>
+    <canvas id="activityLine" height="280"></canvas>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+{{ genre_chart_data|json_script:"analytics-genres" }}
+{{ uploads_series|json_script:"analytics-uploads" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const genres = JSON.parse(document.getElementById('analytics-genres').textContent);
+  const uploads = JSON.parse(document.getElementById('analytics-uploads').textContent);
+  const gLabels = genres.map((x) => x.name);
+  const gData = genres.map((x) => x.count);
+  if (gLabels.length) {
+    new Chart(document.getElementById('genreBar'), {
+      type: 'bar',
+      data: {
+        labels: gLabels,
+        datasets: [{ data: gData, backgroundColor: '#1ED760', borderRadius: 6 }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#B3B3B3' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+          y: { ticks: { color: '#B3B3B3' }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  const uLabels = uploads.map((x) => x.day);
+  const uData = uploads.map((x) => x.count);
+  new Chart(document.getElementById('activityLine'), {
+    type: 'line',
+    data: {
+      labels: uLabels,
+      datasets: [{
+        label: 'Classifications',
+        data: uData,
+        borderColor: '#1ED760',
+        backgroundColor: 'rgba(30,215,96,0.15)',
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#B3B3B3' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+        y: { ticks: { color: '#B3B3B3' }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+      }
+    }
+  });
+</script>
+{% endblock %}

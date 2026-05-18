@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}GenreLab{% endblock %} | Music AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      important: '#gl-app',
+      theme: {
+        extend: {
+          colors: {
+            spotify: {
+              bg: 'rgb(18 18 18 / <alpha-value>)',
+              surface: 'rgb(31 31 31 / <alpha-value>)',
+              elevated: 'rgb(40 40 40 / <alpha-value>)',
+              green: 'rgb(30 215 96 / <alpha-value>)',
+              greenHover: 'rgb(29 185 84 / <alpha-value>)',
+              text: 'rgb(255 255 255 / <alpha-value>)',
+              muted: 'rgb(179 179 179 / <alpha-value>)',
+            },
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          boxShadow: {
+            lift: '0 8px 24px rgba(0,0,0,0.45)',
+            card: '0 4px 16px rgba(0,0,0,0.35)',
+          },
+        },
+      },
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=5">
+  <style>[x-cloak]{display:none!important}</style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body id="gl-app" class="min-h-full bg-spotify-bg text-spotify-text font-sans antialiased" x-data="{ sidebarOpen: false, playerOpen: false }">
+  {% if request.user.is_authenticated %}
+  <div class="gl-shell">
+    {% include "components/sidebar.html" %}
+    <div class="gl-content-shell">
+      {% include "components/navbar.html" %}
+      <main class="gl-main">
+        {% include "components/messages_toast.html" %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+    {% include "components/mobile_nav.html" %}
+  </div>
+  {% else %}
+  <main class="min-h-screen flex flex-col">
+    {% include "components/messages_toast.html" %}
+    {% block auth_content %}{% endblock %}
+  </main>
+  {% endif %}
+  {% block scripts %}{% endblock %}
+</body>
+</html>

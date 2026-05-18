@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<section class="mb-8">
+  <form method="get" class="spotify-card flex flex-col gap-3 md:flex-row md:items-center">
+    <input type="search" name="q" value="{{ search }}" placeholder="Search filename..." class="spotify-input md:max-w-md">
+    <select name="genre" class="spotify-input md:max-w-xs" onchange="this.form.submit()">
+      <option value="">All genres</option>
+      {% for g in all_genres %}
+      <option value="{{ g.slug }}" {% if genre_filter == g.slug %}selected{% endif %}>{{ g.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="gl-secondary-btn md:ml-auto">Filter</button>
+  </form>
+</section>
+
+<section class="space-y-3" aria-label="Classification history">
+  {% for r in results %}
+  <article class="spotify-card flex flex-col gap-4 lg:flex-row lg:items-center">
+    <div class="gl-cover shrink-0">
+      {{ r.predicted_genre.slug|slice:":2"|upper }}
+    </div>
+    <div class="min-w-0 flex-1">
+      <p class="truncate font-bold">{{ r.audio.original_filename }}</p>
+      <p class="text-sm text-spotify-muted">{{ r.predicted_genre.name }} | {% widthratio r.confidence 1 100 %}% | {{ r.created_at|date:"M j, Y H:i" }}</p>
+      <audio controls class="mt-3 h-10 w-full max-w-2xl" preload="none" src="{{ r.audio.file.url }}"></audio>
+    </div>
+    <form action="{% url 'dashboard:history_delete' r.pk %}" method="post" class="shrink-0" onsubmit="return confirm('Delete this entry?');">
+      {% csrf_token %}
+      <button type="submit" class="gl-danger-btn w-full lg:w-auto">Delete</button>
+    </form>
+  </article>
+  {% empty %}
+  <div class="spotify-card py-16 text-center text-spotify-muted">
+    No results. <a href="{% url 'dashboard:upload' %}" class="font-bold text-spotify-green">Upload</a>
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}
