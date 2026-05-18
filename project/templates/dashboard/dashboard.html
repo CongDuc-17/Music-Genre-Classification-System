@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="gl-hero mb-10">
+  <div class="max-w-2xl">
+    <p class="mb-3 text-sm font-bold uppercase text-spotify-green">AI powered</p>
+    <h2 class="mb-4 text-4xl font-bold leading-tight md:text-[44px]">Classify any track in seconds.</h2>
+    <p class="mb-8 max-w-xl text-base text-spotify-muted md:text-lg">Upload mp3, wav, or ogg files and let the trained spectrogram model identify the most likely genre.</p>
+    <a href="{% url 'dashboard:upload' %}" class="spotify-pill-btn">Upload music</a>
+  </div>
+</section>
+
+<section class="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Summary">
+  <div class="spotify-card gl-stat-card">
+    <p class="text-xs font-bold uppercase text-spotify-muted">Total runs</p>
+    <p class="mt-3 text-4xl font-bold">{{ stats.total_classifications }}</p>
+  </div>
+  <div class="spotify-card gl-stat-card">
+    <p class="text-xs font-bold uppercase text-spotify-muted">Last 7 days</p>
+    <p class="mt-3 text-4xl font-bold">{{ stats.recent_activity_count_7d }}</p>
+  </div>
+  <div class="spotify-card sm:col-span-2">
+    <div class="mb-4 flex items-center justify-between gap-4">
+      <p class="text-xs font-bold uppercase text-spotify-muted">Trending genres</p>
+      <a href="{% url 'dashboard:analytics' %}" class="text-sm font-bold text-spotify-green hover:underline">View analytics</a>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      {% for g in stats.most_common_genres|slice:":5" %}
+        <span class="rounded-full bg-spotify-elevated px-3 py-2 text-xs font-bold text-spotify-muted">{{ g.predicted_genre__slug }} | {{ g.c }}</span>
+      {% empty %}
+        <span class="text-sm text-spotify-muted">Classify a track to see trends.</span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="grid gap-6 lg:grid-cols-3">
+  <div class="spotify-card lg:col-span-2">
+    <div class="mb-5 flex items-center justify-between gap-4">
+      <h3 class="text-2xl font-bold">Recent predictions</h3>
+      <a href="{% url 'dashboard:history' %}" class="text-sm font-bold text-spotify-green hover:underline">See all</a>
+    </div>
+    <div class="space-y-2">
+      {% for r in recent_results %}
+      <a href="{% url 'dashboard:history' %}" class="gl-hover-tile flex min-h-[88px] items-center gap-4 p-3 group">
+        <div class="gl-cover shrink-0">
+          {{ r.predicted_genre.slug|slice:":2"|upper }}
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="truncate font-bold group-hover:text-spotify-green">{{ r.audio.original_filename }}</p>
+          <p class="text-sm text-spotify-muted">{{ r.predicted_genre.name }} | {% widthratio r.confidence 1 100 %}% confidence</p>
+        </div>
+        <span class="shrink-0 text-xs text-spotify-muted">{{ r.created_at|date:"M j" }}</span>
+      </a>
+      {% empty %}
+      <div class="py-12 text-center text-sm text-spotify-muted">No classifications yet. <a href="{% url 'dashboard:upload' %}" class="font-bold text-spotify-green">Upload a track</a>.</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="spotify-card">
+    <h3 class="mb-4 text-2xl font-bold">Genre mix</h3>
+    <canvas id="dashMiniChart" height="220"></canvas>
+    <p class="mt-4 text-xs text-spotify-muted">Distribution from your full history.</p>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+{{ genre_chart_data|json_script:"genre-chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const dist = JSON.parse(document.getElementById('genre-chart-data').textContent);
+  const labels = dist.map((x) => x.name);
+  const values = dist.map((x) => x.count);
+  const chartEl = document.getElementById('dashMiniChart');
+  if (labels.length && chartEl) {
+    new Chart(chartEl, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: ['#1ED760', '#DB2D79', '#667A7A', '#1DB954', '#B3B3B3', '#7C7C7C'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom', labels: { color: '#B3B3B3', boxWidth: 10 } } },
+        cutout: '64%'
+      }
+    });
+  }
+</script>
+{% endblock %}

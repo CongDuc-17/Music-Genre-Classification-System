@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Upload{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-4xl" x-data="{ dragging: false, fileName: '', hasFile: false, uploading: false, progress: 0,
+  onPick(e) { const f = e.target.files[0]; if (f) { this.fileName = f.name; this.hasFile = true; } },
+  onDrop(e) { this.dragging = false; const f = e.dataTransfer.files[0]; if (!f) return;
+    const input = this.$refs.fileInput; const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files;
+    this.fileName = f.name; this.hasFile = true; },
+  startLoad() { if (!this.hasFile) return false; this.uploading = true; this.progress = 0;
+    const id = setInterval(() => { this.progress = Math.min(this.progress + 6, 90); }, 100);
+    this._tid = id; return true; }
+}">
+  <form action="{% url 'dashboard:upload_classify' %}" method="post" enctype="multipart/form-data" class="space-y-6" @submit="if (!hasFile) { $event.preventDefault(); return }; startLoad()">
+    {% csrf_token %}
+    <div
+      class="upload-drop flex cursor-pointer flex-col items-center justify-center"
+      :class="{ 'dragover': dragging }"
+      @dragover.prevent="dragging = true"
+      @dragleave.prevent="dragging = false"
+      @drop.prevent="onDrop($event)"
+      @click="$refs.fileInput.click()"
+      role="button"
+      tabindex="0"
+      @keydown.enter.prevent="$refs.fileInput.click()"
+      @keydown.space.prevent="$refs.fileInput.click()"
+    >
+      <input type="file" name="file" accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" class="hidden" x-ref="fileInput" @change="onPick($event)">
+      <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-spotify-green text-black">
+        <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 18V5l12-2v13M9 18a3 3 0 1 1-2-2.83M21 16a3 3 0 1 1-2-2.83M9 9l12-2"/></svg>
+      </div>
+      <p class="text-2xl font-bold">Drop your track here</p>
+      <p class="mt-2 max-w-xl text-sm text-spotify-muted">Click to browse or drag an mp3, wav, or ogg file. Short clips are loop-tiled to 4 seconds before inference.</p>
+      <p class="gl-hint-muted">MP3 on Windows: install <a href="https://ffmpeg.org/download.html" class="font-bold text-spotify-green hover:underline" target="_blank" rel="noopener">FFmpeg</a> and add it to PATH if decoding fails.</p>
+      <p class="mt-5 rounded-full bg-spotify-elevated px-4 py-2 text-sm font-bold text-spotify-green" x-show="fileName" x-text="fileName"></p>
+    </div>
+
+    <div x-show="uploading" class="space-y-2" x-cloak>
+      <div class="h-2 overflow-hidden rounded-full bg-spotify-elevated">
+        <div class="h-full bg-spotify-green transition-all duration-300" :style="'width:' + progress + '%'"></div>
+      </div>
+      <p class="text-center text-xs text-spotify-muted">Running model inference...</p>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <button type="submit" class="spotify-pill-btn w-full sm:w-auto" :disabled="!hasFile || uploading">
+        Classify track
+      </button>
+      <span class="text-sm text-spotify-muted">Accepted formats: mp3, wav, ogg</span>
+    </div>
+  </form>
+</div>
+{% endblock %}

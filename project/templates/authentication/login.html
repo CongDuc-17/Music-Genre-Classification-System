@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block auth_content %}
+<div class="gl-auth-wrap flex flex-1 items-center justify-center px-4 py-16">
+  <section class="w-full max-w-md spotify-card">
+    <div class="mb-8 text-center">
+      <div class="gl-brand-mark mx-auto mb-4">G</div>
+      <h1 class="text-3xl font-bold">Welcome back</h1>
+      <p class="mt-2 text-sm text-spotify-muted">Sign in to classify tracks and review your history.</p>
+    </div>
+    <form method="post" action="{% url 'dashboard:login' %}" class="space-y-4">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <p class="rounded-[6px] bg-red-500/10 px-3 py-2 text-sm text-red-300">{{ form.non_field_errors.0 }}</p>
+      {% endif %}
+      <div>
+        <label class="sr-only" for="id_username">Username</label>
+        {{ form.username }}
+      </div>
+      <div>
+        <label class="sr-only" for="id_password">Password</label>
+        {{ form.password }}
+      </div>
+      <button type="submit" class="spotify-pill-btn w-full">Sign in</button>
+    </form>
+    <p class="mt-8 text-center text-sm text-spotify-muted">
+      No account? <a href="{% url 'dashboard:register' %}" class="font-bold text-white hover:text-spotify-green">Create one</a>
+    </p>
+  </section>
+</div>
+{% endblock %}

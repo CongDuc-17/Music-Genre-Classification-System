@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block content %}
+{% if prediction %}
+<div class="mx-auto max-w-5xl space-y-8">
+  <section class="spotify-card py-10 text-center">
+    <p class="mb-2 text-sm font-bold uppercase text-spotify-muted">Predicted genre</p>
+    <h2 class="mb-3 text-5xl font-bold text-spotify-green md:text-6xl">{{ prediction.genre_name }}</h2>
+    <p class="text-spotify-muted">Confidence <span class="font-bold text-white">{% if prediction.confidence_percent %}{{ prediction.confidence_percent }}{% else %}{% widthratio prediction.confidence 1 100 %}{% endif %}%</span> | {{ prediction.num_chunks }} spectrogram chunks</p>
+    <div class="mt-8 flex flex-wrap justify-center gap-2">
+      {% for item in prediction.top_k_predictions %}
+      <span class="rounded-full bg-spotify-elevated px-4 py-2 text-sm font-bold text-spotify-muted">{{ item.genre }} | {{ item.score_percent }}%</span>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="grid gap-6 md:grid-cols-2">
+    <div class="spotify-card">
+      <h3 class="mb-4 text-xl font-bold">Probability distribution</h3>
+      <canvas id="probChart" height="260"></canvas>
+    </div>
+    <div class="spotify-card">
+      <h3 class="mb-4 text-xl font-bold">Waveform</h3>
+      <div id="waveform" class="min-h-[140px] overflow-hidden rounded-[6px] bg-black/60"></div>
+      <audio id="result-audio" src="{{ prediction.audio_url }}" controls class="mt-4 w-full" preload="metadata"></audio>
+      <dl class="mt-4 text-sm text-spotify-muted">
+        <dt class="inline text-white">File</dt>
+        <dd class="ml-2 inline">{{ prediction.original_filename|default:"N/A" }}</dd>
+      </dl>
+    </div>
+  </section>
+
+  <div class="flex flex-col gap-3 sm:flex-row">
+    <a href="{% url 'dashboard:upload' %}" class="spotify-pill-btn">Classify another</a>
+    <a href="{% url 'dashboard:history' %}" class="gl-secondary-btn">History</a>
+  </div>
+</div>
+{{ prediction.probabilities_percent|json_script:"prediction-probs" }}
+{% else %}
+<div class="spotify-card py-16 text-center text-spotify-muted">
+  <p>No result in session. <a href="{% url 'dashboard:upload' %}" class="font-bold text-spotify-green">Upload a track</a>.</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if prediction %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7"></script>
+<script>
+  const probs = JSON.parse(document.getElementById('prediction-probs').textContent);
+  const labels = Object.keys(probs);
+  const values = Object.values(probs);
+  new Chart(document.getElementById('probChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Probability',
+        data: values,
+        backgroundColor: '#1ED760',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { max: 100, ticks: { color: '#B3B3B3' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+        y: { ticks: { color: '#B3B3B3' }, grid: { display: false } }
+      }
+    }
+  });
+
+  const audioEl = document.getElementById('result-audio');
+  WaveSurfer.create({
+    container: '#waveform',
+    media: audioEl,
+    waveColor: '#667A7A',
+    progressColor: '#1ED760',
+    cursorColor: '#1ED760',
+    height: 140,
+    barWidth: 2,
+    barGap: 1
+  });
+</script>
+{% endif %}
+{% endblock %}

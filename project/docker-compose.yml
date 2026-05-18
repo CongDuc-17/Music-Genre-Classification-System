@@ -1,0 +1,34 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_DEBUG: "false"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
+      DATABASE_URL: postgres://genrelab:genrelab@db:5432/genrelab
+    volumes:
+      - media_data:/app/media
+      - ../AI/third_genre_classification_model.h5:/data/third_genre_classification_model.h5:ro
+      - ../AI/preprocessing_config.json:/data/preprocessing_config.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: genrelab
+      POSTGRES_PASSWORD: genrelab
+      POSTGRES_DB: genrelab
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U genrelab -d genrelab"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  media_data:

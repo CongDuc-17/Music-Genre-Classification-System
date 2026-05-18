@@ -1,0 +1,10 @@
+{% if messages %}
+<div class="fixed right-4 top-20 z-50 max-w-sm space-y-2" x-data="{ show: true }">
+  {% for message in messages %}
+  <div class="gl-toast px-4 py-3 text-sm {% if message.tags == 'error' %}error{% endif %}"
+       x-show="show" x-transition>
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
