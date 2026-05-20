@@ -38,6 +38,7 @@ def audio_to_mel_chunks(
     *,
     chunk_duration: float | None = None,
     overlap_duration: float | None = None,
+    sample_rate: int | None = None,
     n_mels: int | None = None,
     target_cols: int | None = None,
 ) -> list[np.ndarray]:
@@ -45,11 +46,12 @@ def audio_to_mel_chunks(
     cfg = _cfg()
     chunk_duration = chunk_duration if chunk_duration is not None else cfg["chunk_duration"]
     overlap_duration = overlap_duration if overlap_duration is not None else cfg["overlap_duration"]
+    sample_rate = sample_rate if sample_rate is not None else cfg["sample_rate"]
     n_mels = n_mels if n_mels is not None else cfg["n_mels"]
     target_cols = target_cols if target_cols is not None else cfg["target_cols"]
 
     try:
-        audio, sr = librosa.load(str(file_path), sr=22050, mono=True)
+        audio, sr = librosa.load(str(file_path), sr=sample_rate, mono=True)
     except Exception as e:
         logger.warning("librosa.load failed for %s: %s", file_path, e)
         raise AudioDecodeError(

@@ -13,6 +13,7 @@
   ],
   "chunk_duration": 4,
   "overlap_duration": 2,
+  "sample_rate": 22050,
   "n_mels": 128,
   "target_cols": 173
 }
