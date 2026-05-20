@@ -39,8 +39,13 @@ def predict_genre_from_path(
     x_input = np.array(chunks, dtype=np.float32)
     y_pred_chunks = model.predict(x_input, batch_size=batch_size, verbose=0)
     avg_scores = y_pred_chunks.mean(axis=0)
+    if len(avg_scores) != len(classes):
+        raise AudioDecodeError(
+            "Prediction output size does not match preprocessing_config.json classes. "
+            f"Expected {len(classes)}, got {len(avg_scores)}."
+        )
     predicted_idx = int(np.argmax(avg_scores))
-    top_k_idx = np.argsort(avg_scores)[::-1][:top_k]
+    top_k_idx = np.argsort(avg_scores)[::-1][: min(top_k, len(classes))]
     top_k_preds = [{"genre": classes[i], "score": float(avg_scores[i])} for i in top_k_idx]
 
     probabilities = {classes[i]: float(avg_scores[i]) for i in range(len(classes))}

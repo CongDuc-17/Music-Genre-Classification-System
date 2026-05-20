@@ -1,2 +1,14 @@
 Data
 Data_Test
+
+# Django web app
+project/db.sqlite3
+project/media/
+project/staticfiles/
+project/.env
+__pycache__/
+*.pyc
+
+BAO_CAO_DO_AN.md
+CHUONG_3_TICH_HOP_MODEL_VAN_WEB.md
+DESIGN.md
